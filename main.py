@@ -1,6 +1,6 @@
 # AI 활용 자유 주제 파이썬 미니 프로젝트
 # 이름 또는 학번: 20609 박서완
-# 프로젝트 주제: 2차원 격자 좌표 및 물리 공식을 활용한 2인용 2D 무술 스파링 게임
+# 프로젝트 주제: 메이플 헌터 (Maple Hunter)
 
 # ============================================================
 # 사용 안내
@@ -30,13 +30,20 @@
 # 3번 열: 활동 유형
 # ------------------------------------------------------------
 
-arena = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # row = 0 (세로 높이 y = 5)
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # row = 1 (세로 높이 y = 4)
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # row = 2 (세로 높이 y = 3)
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # row = 3 (세로 높이 y = 2)
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # row = 4 (세로 높이 y = 1)
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   # row = 5 (세로 높이 y = 0, 바닥)
+# 빈 공간은 0으로 채워진 12x20 격자판입니다.
+map_template = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 0 (벽)
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 1
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 2
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 3
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 4
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 5
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 6
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 7
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 8
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 9
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row = 10
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # row = 11 (벽)
 ]
 
 
@@ -45,220 +52,325 @@ arena = [
 # ------------------------------------------------------------
 
 def show_intro():
-    """프로그램 제목과 조작 키 규칙을 출력합니다."""
-    print("=" * 60)
-    print("         🎮 파이썬 2D 콘솔 무술 스파링 게임 🎮")
-    print("=" * 60)
-    print(" [Player 1]  A: 왼쪽  | D: 오른쪽 | W: 점프 | F: 공격")
-    print(" [Player 2]  J: 왼쪽  | L: 오른쪽 | I: 점프 | H: 공격")
-    print(" ※ 입력 방법: 공백으로 구분하여 동시에 입력 (예: D J)")
-    print("=" * 60)
+    """프로그램 제목과 조작법을 알려주는 환영 메시지 출력"""
+    print("=" * 70)
+    print(" 🎮  Welcome to Maple Hunter (메이플 헌터) 🎮 ")
+    print("=" * 70)
+    print(" [조작법]  W: 위 | A: 왼쪽 | S: 아래 | D: 오른쪽 | F: 공격")
+    print(" [규칙]    12x20 크기의 맵을 탐색하며 몬스터 5마리를 사냥하세요!")
+    print("           맵에 떨어진 검(🗡️) 위로 이동하면 턴 소모 없이 즉시 획득합니다.")
+    print("           - 기본칼: ATK +5  |  - 단검: ATK +7  |  - 카람빗: ATK +10")
+    print("           - 쉬움 모드 혜택: 몬스터 처치 시 HP가 20 회복됩니다!")
+    print("=" * 70)
 
 
-def init_game():
-    """게임 시작 시 두 캐릭터의 상태(딕셔너리)를 초기화합니다."""
-    # 플레이어 1 초기 상태 (왼쪽 바닥에 배치)
-    p1 = {
-        'x': 2,        # 가로 위치 (0~14)
-        'y': 0,        # 세로 높이 (0~5, 바닥은 0)
-        'vy': 0,       # 세로 속도 (점프 시 상승하는 힘)
-        'hp': 100,     # 체력
-        'dir': 'right' # 바라보는 방향
+def init_game(difficulty_choice, pattern_choice):
+    """
+    random 모듈을 쓰지 않고, 사용자가 선택한 난이도와 '행운의 번호(패턴)'에 따라 
+    몬스터와 아이템의 배치를 조건문(if-elif)으로 결정하여 반환합니다.
+    """
+    # [★ 수정] 플레이어 기본 정보 (체력 100, 초기 공격력을 15로 낮춤, 12x20 맵 중앙에 배치)
+    player = {
+        'x': 10,      # 가로 위치 (0~19)
+        'y': 6,       # 세로 위치 (0~11)
+        'hp': 100,    # 현재 체력
+        'max_hp': 100,# 최대 체력
+        'atk': 15,    # [★ 수정] 초기 공격력 20 -> 15로 감소
+        'kills': 0    # 처치한 몬스터 수
     }
     
-    # 플레이어 2 초기 상태 (오른쪽 바닥에 배치)
-    p2 = {
-        'x': 12,
-        'y': 0,
-        'vy': 0,
-        'hp': 100,
-        'dir': 'left'
-    }
+    monsters = []
+    items = []
     
-    return p1, p2
-
-
-def draw_arena(p1, p2, attack_zones):
-    """2차원 리스트 격자판을 기반으로 경기장 화면을 렌더링하여 출력합니다."""
-    # 1단계: 상단 체력(HP) 상태 바 출력
-    p1_bars = "■" * (p1['hp'] // 20) + "□" * (5 - (p1['hp'] // 20))
-    p2_bars = "■" * (p2['hp'] // 20) + "□" * (5 - (p2['hp'] // 20))
-    
-    print(f"\nP1: {p1_bars} ({p1['hp']}/100)  |  P2: {p2_bars} ({p2['hp']}/100)")
-    print("-" * 45)
-    
-    # 2단계: 실시간 위치를 새로 그리기 위해 템플릿 격자판을 복사합니다.
-    arena = []
-    for row in arena_template:
-        arena.append(list(row))
+    if difficulty_choice == '1':
+        # 쉬움 모드: 기존 구석 배치 패턴 적용
+        monsters = [
+            ["슬라임", 30, 8, 3, 2, True],       
+            ["리본돼지", 50, 12, 16, 2, True],    
+            ["주황버섯", 70, 15, 3, 9, True],     
+            ["와일드보어", 100, 20, 16, 9, True],  
+            ["발록의영혼", 25, 45, 10, 2, True]    
+        ]
+        items = [
+            ["기본칼", 5, 6, 4, True],
+            ["단검", 7, 14, 4, True],
+            ["카람빗", 10, 10, 9, True]
+        ]
+    else:
+        # 어려움 모드: random 없이 사용자가 선택한 행운의 번호(pattern_choice)에 따라
+        # 가로/세로 각각 3칸 축소된 구역(가로 3~16, 세로 3~8) 내부의 서로 다른 안전한 위치 세트로 배정합니다.
         
-    # 3단계: 공격 판정이 일어난 자리에 공격 이펙트(3)를 표시합니다.
-    for ax, ay in attack_zones:
-        if 0 <= ax < 15 and 0 <= ay < 6:
-            row_idx = 5 - ay # y축 좌표를 2차원 리스트 행 인덱스로 변환
-            arena[row_idx][ax] = 3
-
-    # 4단계: 플레이어들의 실시간 위치를 격자판에 매핑합니다. (대칭 변환 row = 5 - y 적용)
-    p1_row = 5 - p1['y']
-    p2_row = 5 - p2['y']
-    
-    # 캐릭터가 경기장 범위 안에 있을 때만 격자판에 배치하여 오류를 방지합니다.
-    if 0 <= p1_row < 6 and 0 <= p1['x'] < 15:
-        arena[p1_row][p1['x']] = 1
-    if 0 <= p2_row < 6 and 0 <= p2['x'] < 15:
-        arena[p2_row][p2['x']] = 2
-        
-    # 5단계: 이중 반복문(다중 for문)을 사용하여 화면을 최종 출력합니다.
-    for row_idx in range(6):
-        for col_idx in range(15):
-            cell = arena[row_idx][col_idx]
-            if cell == 1:
-                print("①", end="")
-            elif cell == 2:
-                print("②", end="")
-            elif cell == 3:
-                print("＊", end="")
-            else:
-                # 5번째 행(가장 아랫줄)이면 바닥선(_)을 그리고, 그 외에는 공중(.)을 그립니다.
-                if row_idx == 5:
-                    print("_", end="")
-                else:
-                    print(".", end="")
-        print() # 한 행 출력이 끝나면 줄바꿈
-    print("-" * 45)
-
-
-def update_physics(player):
-    """중력 법칙을 연산하여 점프 중인 캐릭터의 Y 좌표를 업데이트합니다."""
-    g = 1 # 중력 가속도
-    
-    # 캐릭터가 공중에 있거나, 위로 올라가는 속도가 있을 때 포물선 운동 처리
-    if player['y'] > 0 or player['vy'] > 0:
-        player['y'] += player['vy']  # 위치 변경
-        player['vy'] -= g            # 중력에 의해 속도가 매 턴 1씩 감소
-        
-    # 예외 처리: 만약 계산 결과 y가 바닥 아래로 내려가면 바닥(0)에 딱 고정시킵니다.
-    if player['y'] < 0:
-        player['y'] = 0
-        player['vy'] = 0
-
-
-def check_hit(attacker, defender):
-    """공격자의 위치와 방향을 기준으로 상대방이 사정거리(2칸) 내에 있는지 판정합니다."""
-    hit_range = 2 # 사정거리
-    
-    # 두 캐릭터의 높이(y)가 같을 때만 공격이 성공할 수 있습니다.
-    if attacker['y'] == defender['y']:
-        # 오른쪽을 보고 공격하는 경우
-        if attacker['dir'] == 'right':
-            # 상대가 내 오른쪽에 있고, 사정거리 이내에 있는지 검사
-            if attacker['x'] < defender['x'] <= attacker['x'] + hit_range:
-                return True
-        # 왼쪽을 보고 공격하는 경우
-        elif attacker['dir'] == 'left':
-            # 상대가 내 왼쪽에 있고, 사정거리 이내에 있는지 검사
-            if attacker['x'] - hit_range <= defender['x'] < attacker['x']:
-                return True
-                
-    return False
-
-
-def process_action(p1, p2, p1_key, p2_key):
-    """플레이어가 입력한 행동키를 해석하여 이동, 점프, 공격을 처리합니다."""
-    attack_zones = [] # 공격 이펙트를 띄울 칸들을 담을 리스트
-    
-    # --- Player 1 조작 처리 ---
-    p1_key = p1_key.upper()
-    if p1_key == 'A':
-        p1['x'] = max(0, p1['x'] - 1) # 왼쪽 벽 뚫기 방지
-        p1['dir'] = 'left'
-    elif p1_key == 'D':
-        p1['x'] = min(14, p1['x'] + 1) # 오른쪽 벽 뚫기 방지
-        p1['dir'] = 'right'
-    elif p1_key == 'W' and p1['y'] == 0: # 바닥에 서 있을 때만 점프 가능
-        p1['vy'] = 3 # 상승 속도(vy) 인가
-    elif p1_key == 'F':
-        # 바라보는 방향에 맞춰 전방 2칸을 공격 범위로 시각화 리스트에 추가
-        offset = 1 if p1['dir'] == 'right' else -1
-        attack_zones.append((p1['x'] + offset, p1['y']))
-        attack_zones.append((p1['x'] + offset * 2, p1['y']))
-        
-        # 피격 검사 성공 시 체력 감수 및 밀려남(넉백) 처리
-        if check_hit(p1, p2):
-            print("💥 Player 1의 강력한 무술 공격 적중!")
-            p2['hp'] = max(0, p2['hp'] - 20)
-            p2['x'] = min(14, p2['x'] + 2) if p1['dir'] == 'right' else max(0, p2['x'] - 2)
-
-    # --- Player 2 조작 처리 ---
-    p2_key = p2_key.upper()
-    if p2_key == 'J':
-        p2['x'] = max(0, p2['x'] - 1)
-        p2['dir'] = 'left'
-    elif p2_key == 'L':
-        p2['x'] = min(14, p2['x'] + 1)
-        p2['dir'] = 'right'
-    elif p2_key == 'I' and p2['y'] == 0:
-        p2['vy'] = 3
-    elif p2_key == 'H':
-        offset = 1 if p2['dir'] == 'right' else -1
-        attack_zones.append((p2['x'] + offset, p2['y']))
-        attack_zones.append((p2['x'] + offset * 2, p2['y']))
-        
-        if check_hit(p2, p1):
-            print("💥 Player 2의 강력한 무술 공격 적중!")
-            p1['hp'] = max(0, p1['hp'] - 20)
-            p1['x'] = min(14, p1['x'] + 2) if p2['dir'] == 'right' else max(0, p1['x'] - 2)
+        if pattern_choice == '1':
+            # 어려움 패턴 A (X자 배치 형태)
+            monsters = [
+                ["슬라임", 30, 8, 4, 3, True],       
+                ["리본돼지", 50, 12, 15, 3, True],    
+                ["주황버섯", 70, 15, 4, 8, True],     
+                ["와일드보어", 100, 20, 15, 8, True],  
+                ["발록의영혼", 25, 45, 9, 5, True]    
+            ]
+            items = [
+                ["기본칼", 5, 5, 6, True],
+                ["단검", 7, 13, 6, True],
+                ["카람빗", 10, 10, 3, True]
+            ]
+        elif pattern_choice == '2':
+            # 어려움 패턴 B (마름모형 배치 형태)
+            monsters = [
+                ["슬라임", 30, 8, 9, 3, True],       
+                ["리본돼지", 50, 12, 3, 5, True],    
+                ["주황버섯", 70, 15, 16, 5, True],     
+                ["와일드보어", 100, 20, 9, 8, True],  
+                ["발록의영혼", 25, 45, 10, 5, True]    
+            ]
+            items = [
+                ["기본칼", 5, 6, 4, True],
+                ["단검", 7, 13, 7, True],
+                ["카람빗", 10, 6, 7, True]
+            ]
+        else:
+            # 어려움 패턴 C (지그재그 및 대칭 배치 형태)
+            monsters = [
+                ["슬라임", 30, 8, 6, 4, True],       
+                ["리본돼지", 50, 12, 13, 4, True],    
+                ["주황버섯", 70, 15, 6, 7, True],     
+                ["와일드보어", 100, 20, 13, 7, True],  
+                ["발록의영혼", 25, 45, 10, 3, True]    
+            ]
+            items = [
+                ["기본칼", 5, 10, 8, True],
+                ["단검", 7, 4, 5, True],
+                ["카람빗", 10, 15, 5, True]
+            ]
             
-    return attack_zones
+    return player, monsters, items
 
 
-def main():
-    show_intro()
-    p1, p2 = init_game()
+def draw_screen(player, monsters, items):
+    """현재 플레이어 상태바와 12x20 격자 맵을 그립니다."""
+    # 1단계: 플레이어 HP 바 제작 (10칸 크기 게이지)
+    hp_ratio = max(0, player['hp']) // 10
+    hp_bar = "■" * hp_ratio + "□" * (10 - hp_ratio)
     
-    # 초기 라운드 출력
-    draw_arena(p1, p2, [])
+    print("\n" + "=" * 65)
+    print(f" PLAYER HP: [{hp_bar}] {player['hp']}/{player['max_hp']} | ATK: {player['atk']} | 사냥: {player['kills']}/5")
+    print("=" * 65)
     
-    # ------------------------------------------------------------
+    # 2단계: 빈 맵 템플릿 복사하기 (12행 20열)
+    game_map = []
+    for row in map_template:
+        game_map.append(list(row))
+        
+    # 3단계: 살아있는 몬스터들의 위치를 번호(2~6)로 맵에 매핑
+    for idx, monster in enumerate(monsters):
+        name, hp, atk, mx, my, is_alive = monster
+        if is_alive:
+            game_map[my][mx] = idx + 2
+            
+    # 4단계: 존재하는 아이템의 위치를 번호(7~9)로 맵에 매핑 (검 기호용)
+    for idx, item in enumerate(items):
+        iname, iatk, ix, iy, is_exist = item
+        if is_exist:
+            game_map[iy][ix] = idx + 7
+            
+    # 5단계: 플레이어의 위치를 맵에 1로 배치
+    px, py = player['x'], player['y']
+    if 0 <= px < 20 and 0 <= py < 12:
+        game_map[py][px] = 1
+        
+    # 6단계: 이중 반복문을 활용하여 화면에 시각화 (12행 20열)
+    for r in range(12):
+        for c in range(20):
+            cell = game_map[r][c]
+            if cell == 1:
+                print("🧝", end="")  # 플레이어 기호
+            elif cell == 2:
+                print("🟢", end="")  # 슬라임
+            elif cell == 3:
+                print("🐷", end="")  # 리본돼지
+            elif cell == 4:
+                print("🍄", end="")  # 주황버섯
+            elif cell == 5:
+                print("🐗", end="")  # 와일드보어
+            elif cell == 6:
+                print("😈", end="")  # 발록의 영혼
+            elif cell in [7, 8, 9]:
+                print("🗡️", end="")  # 검 아이템 기호
+            else:
+                # 12x20 맵 벽 경계 처리
+                if r == 0 or r == 11 or c == 0 or c == 19:
+                    print("# ", end="")  # 테두리 벽
+                else:
+                    print(". ", end="")  # 빈 땅
+        print() # 줄바꿈
+    print("=" * 65)
+
+
+def move_player(player, key, items):
+    """
+    WASD 키에 맞춰 플레이어를 이동시킵니다.
+    이동 후, 새로운 위치에 아이템이 있다면 턴 소모 없이 즉시 획득합니다.
+    """
+    key = key.upper()
+    next_x = player['x']
+    next_y = player['y']
+    
+    if key == 'W':
+        next_y -= 1
+    elif key == 'S':
+        next_y += 1
+    elif key == 'A':
+        next_x -= 1
+    elif key == 'D':
+        next_x += 1
+        
+    # 12x20 맵 벽 경계 조건 검사 (가로 1~18, 세로 1~10 범위 내부만 이동 허용)
+    if 1 <= next_x <= 18 and 1 <= next_y <= 10:
+        player['x'] = next_x
+        player['y'] = next_y
+        
+        # 이동 후 즉시 아이템 획득 검사 (실시간 충돌 체크)
+        for item in items:
+            iname, iatk, ix, iy, is_exist = item
+            if is_exist and next_x == ix and next_y == iy:
+                # 공격력 상승 및 상태 업데이트
+                player['atk'] += iatk
+                item[4] = False  # 맵에서 아이템 제거
+                print("\n" + "*" * 50)
+                print(f"🗡️  [아이템 획득] {iname}을(를) 장착했습니다!")
+                print(f"✨  공격력이 {iatk}만큼 상승했습니다! (현재 공격력: {player['atk']})")
+                print("*" * 50)
+    else:
+        print("\n🛑 앗! 맵의 단단한 경계 벽에 막혀 움직일 수 없습니다!")
+
+
+def check_battle(player, monsters, difficulty_choice):
+    """
+    플레이어가 F(공격)를 눌렀을 때 주변에 몬스터가 있는지 확인하고 전투를 진행합니다.
+    쉬움 모드('1')인 경우 몬스터 처치 시 플레이어의 HP가 20 회복되는 조건문을 추가했습니다.
+    """
+    px, py = player['x'], player['y']
+    battle_occurred = False
+    
+    for monster in monsters:
+        name, hp, atk, mx, my, is_alive = monster
+        
+        if is_alive:
+            if abs(px - mx) <= 1 and abs(py - my) <= 1:
+                print(f"\n⚔️ 몬스터 [{name}] 발견! 사냥을 시작합니다!")
+                
+                # 1. 플레이어 선공
+                hp -= player['atk']
+                print(f"💥 당신의 선제 공격! [{name}]에게 {player['atk']}의 데미지를 입혔습니다.")
+                
+                # 몬스터 처치 판정
+                if hp <= 0:
+                    print(f"🎉 축하합니다! [{name}]을(를) 완벽히 처치했습니다!")
+                    monster[1] = 0           
+                    monster[5] = False       
+                    player['kills'] += 1     
+                    
+                    # [성장 시스템] 공격력 상승
+                    player['atk'] += 5
+                    print(f"✨ 사냥의 기운을 얻어 공격력이 5 상승했습니다! (현재 공격력: {player['atk']})")
+                    
+                    # 쉬움 모드('1')일 경우 HP 20 회복 (최대 체력을 초과하지 않도록 보정)
+                    if difficulty_choice == '1':
+                        recovered_hp = min(player['hp'] + 20, player['max_hp'])
+                        actual_recovery = recovered_hp - player['hp']
+                        player['hp'] = recovered_hp
+                        print(f"💖 [쉬움 모드 보너스] 생명의 기운이 감돌아 HP가 {actual_recovery} 회복되었습니다! (현재 HP: {player['hp']}/{player['max_hp']})")
+                else:
+                    # 2. 몬스터가 생존 시 반격
+                    monster[1] = hp          
+                    player['hp'] -= atk      
+                    print(f"🛡️ [{name}]의 위협적인 반격! {atk}의 피해를 입었습니다.")
+                    print(f"   ({name}의 남은 HP: {hp})")
+                
+                battle_occurred = True
+                break
+                
+    if not battle_occurred:
+        print("\n💨 쉭쉭! 허공에 칼을 휘둘렀습니다. (주변에 몬스터가 없습니다.)")
+
+
+# ------------------------------------------------------------
 # 3. 프로그램 실행
 # ------------------------------------------------------------
-turns_limit = 15 # 경기 제한 시간 (15턴)
+def main():
+    show_intro()
+    
+    print("\n[ 난이도 선택 ]")
+    print("1. 쉬움 모드 (제한 턴: 70턴 | 탐험하기 쉬운 구조 | 처치 시 HP 20 회복)")
+    print("2. 어려움 모드 (제한 턴: 45턴 | 무작위 내부 구역 배치)")
+    
+    while True:
+        difficulty = input("원하는 난이도 번호를 입력하세요 (1 또는 2): ").strip()
+        if difficulty == '1':
+            turns_limit = 70
+            print("\n🟢 [쉬움 모드]가 활성화되었습니다. 여유롭게 몬스터를 사냥하세요! (제한 70턴)")
+            pattern_choice = '1'  # 쉬움은 단일 패턴으로 고정
+            break
+        elif difficulty == '2':
+            turns_limit = 45
+            print("\n🔴 [어려움 모드]가 활성화되었습니다! (제한 45턴)")
+            
+            # random 없이 무작위 배치를 구현하기 위한 '행운의 번호' 입력 시스템
+            print("\n🔮 오늘 당신의 행운의 번호는 무엇인가요?")
+            print("1번 대륙 | 2번 대륙 | 3번 대륙")
+            while True:
+                pattern_choice = input("선택할 번호 입력 (1, 2, 3 중 하나): ").strip()
+                if pattern_choice in ['1', '2', '3']:
+                    print(f"\n⚡ {pattern_choice}번 대륙의 사냥터 문이 열렸습니다! 몬스터들의 위치가 재배정됩니다.")
+                    break
+                else:
+                    print("⚠️ 잘못된 입력입니다. '1', '2', '3' 중 하나를 입력해 주세요.")
+            break
+        else:
+            print("⚠️ 잘못된 입력입니다. '1' 또는 '2'를 입력해주세요.")
+            
+    # 사용자가 고른 난이도와 행운의 번호 패턴을 바탕으로 맵 정보 설정
+    player, monsters, items = init_game(difficulty, pattern_choice)
+            
     turn = 1
     
-    # 두 플레이어의 체력이 0보다 크고 제한 시간이 남았을 때 루프 작동
-    while turn <= turns_limit and p1['hp'] > 0 and p2['hp'] > 0:
-        print(f"\n[라운드 {turn} / {turns_limit}]")
+    # 게임 시작 후 첫 화면 출력 (아이템 정보도 함께 전달)
+    draw_screen(player, monsters, items)
+    
+    while turn <= turns_limit and player['hp'] > 0 and player['kills'] < 5:
+        print(f"\n[ 턴 {turn} / {turns_limit} ]")
+        action = input("행동을 입력하세요 (WASD: 이동, F: 공격, Q: 마을귀환/종료): ").strip().upper()
         
-        # 키보드로부터 동시에 두 플레이어의 행동을 공백으로 받아옵니다.
-        try:
-            p1_in, p2_in = input("두 플레이어의 행동을 공백으로 구분하여 입력하세요: ").split()
-        except ValueError:
-            print("⚠️ 입력 규칙을 확인해 주세요! 두 글자 사이에 공백을 한 칸 넣어주세요. (예: D J)")
-            continue # 예외 처리: 잘못 입력하면 이번 턴을 다시 진행함
+        if action == 'Q':
+            print("\n🛑 사냥을 중단하고 엘리니아 마을로 안전하게 귀환합니다.")
+            break
             
-        # 1단계: 사용자의 이동/공격 키 입력 처리
-        attack_effects = process_action(p1, p2, p1_in, p2_in)
-        
-        # 2단계: 공중에 뜬 캐릭터에게 중력 효과 반영
-        update_physics(p1)
-        update_physics(p2)
-        
-        # 3단계: 가상 공간 격자판 화면 출력
-        draw_arena(p1, p2, attack_effects)
-        
+        if action not in ['W', 'A', 'S', 'D', 'F']:
+            print("\n⚠️ 잘못된 키를 입력하셨습니다! W, A, S, D(이동) 또는 F(공격)를 누르세요.")
+            continue
+            
+        # 정상 행동 처리
+        if action in ['W', 'A', 'S', 'D']:
+            move_player(player, action, items)
+        elif action == 'F':
+            # 난이도 매개변수를 check_battle 함수에 함께 전달합니다.
+            check_battle(player, monsters, difficulty)
+            
+        # 상태 반영 화면 업데이트 및 턴 증가
+        draw_screen(player, monsters, items)
         turn += 1
         
-    # --- 경기 최종 승패 판정 및 출력 ---
-    print("\n================== 경기 종료 ==================")
-    if p1['hp'] == p2['hp']:
-        print("🤝 무승부! 두 고수의 기량이 막상막하입니다.")
-    elif p1['hp'] > p2['hp']:
-        print("🏆 Player 1 승리! 최강의 무술 고수로 등극했습니다!")
+    print("\n" + "=" * 65)
+    print("                    GAME OVER                    ")
+    print("=" * 65)
+    if player['kills'] == 5:
+        print("🏆 대성공! 5마리의 몬스터를 모두 사냥해 광교고의 전설이 되었습니다!")
+    elif player['hp'] <= 0:
+        print("☠️ 으아악! 캐릭터가 쓰러졌습니다... 마을 부활 장소로 이동합니다.")
     else:
-        print("🏆 Player 2 승리! 최강의 무술 고수로 등극했습니다!")
-    print("===============================================")
+        print("⏳ 시간 초과! 사냥터 이용 시간이 종료되어 밖으로 쫓겨났습니다.")
+    print("=" * 65)
 
 
-# 프로그램 시작점
-    if __name__ == '__main__':
+if __name__ == '__main__':
     main()
